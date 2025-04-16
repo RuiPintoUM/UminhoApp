@@ -2,20 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Alert } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
+import uminho_locations from '../../assets/uminho_locations.json'; // Importa o JSON com as localizações
 
 export default function TabOneScreen() {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [enteredBuildings, setEnteredBuildings] = useState([]); // Array para rastrear os edifícios em que o utilizador entrou
-
-  const uminhoLocations = {
-    cp2: { latitude: 41.55991529847114, longitude: -8.397766065898065, info: 'Campus de Azurém (CP2)', radius: 50 }, 
-    cp1: { latitude: 41.560377238886176, longitude:  -8.39570615423141, info: 'Campus de Gualtar (CP1)', radius: 55 },
-    biblioteca: { latitude: 41.56000511683078, longitude: -8.396887998956991, info: 'Biblioteca', radius: 30 }, 
-    ginasio: { latitude: 41.56199161501332, longitude: -8.39488629675669, info: 'Ginásio', radius: 50},
-    cantina: { latitude: 41.56200327085424, longitude: -8.398358261303356, info: 'Cantina', radius: 50 },
-    casa_Rui: { latitude: 41.431429490604, longitude: -8.484463773265833, info: 'Casa Rui e Raquel', radius: 50}
-    };
+  const [enteredBuildings, setEnteredBuildings] = useState([]);
+  const [selectedBuilding, setSelectedBuilding] = useState(null); // Novo estado para o edifício selecionado
 
   useEffect(() => {
     (async () => {
@@ -26,13 +19,12 @@ export default function TabOneScreen() {
       }
 
       let currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High, // Maior precisão
-        timeInterval: 5000,                // Atualiza a cada 5 segundos (opcional)
-        distanceInterval: 10,              // Atualiza a cada 10 metros (opcional)
+        accuracy: Location.Accuracy.High,
+        timeInterval: 5000,
+        distanceInterval: 10,
       });
       setLocation(currentLocation);
 
-      // Iniciar o rastreamento contínuo da localização
       Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
@@ -54,35 +46,33 @@ export default function TabOneScreen() {
 
   const checkGeofences = () => {
     const { latitude, longitude } = location.coords;
-    const newEnteredBuildings = [...enteredBuildings]; // Cópia para modificar
+    const newEnteredBuildings = [...enteredBuildings];
 
-    for (const building in uminhoLocations) {
-      const buildingLocation = uminhoLocations[building];
+    for (const building of uminho_locations) { // Usar o array do JSON
       const distance = calculateDistance(
         latitude, longitude,
-        buildingLocation.latitude, buildingLocation.longitude
+        building.latitude, building.longitude
       );
 
-      const isCurrentlyInside = distance < buildingLocation.radius;
-      const wasPreviouslyInside = enteredBuildings.includes(building);
+      const isCurrentlyInside = distance < building.radius;
+      const wasPreviouslyInside = enteredBuildings.includes(building.id);
 
       if (isCurrentlyInside && !wasPreviouslyInside) {
         // Entrou na geofence
-        showAlert(`Entrou em ${buildingLocation.info}`);
-        newEnteredBuildings.push(building);
+        showAlert(`Entrou em ${building.name}`, building.description); // Mostrar descrição
+        newEnteredBuildings.push(building.id);
       } else if (!isCurrentlyInside && wasPreviouslyInside) {
-        // Saiu da geofence (opcional:  podes adicionar lógica para quando o utilizador sai)
-        showAlert(`Saiu de ${buildingLocation.info}`);
-        newEnteredBuildings.splice(newEnteredBuildings.indexOf(building), 1);
+        // Saiu da geofence (opcional)
+        // showAlert(`Saiu de ${building.name}`);
+        newEnteredBuildings.splice(newEnteredBuildings.indexOf(building.id), 1);
       }
     }
 
     setEnteredBuildings(newEnteredBuildings);
   };
 
-
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Raio da Terra em km
+    const R = 6371;
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a =
@@ -90,7 +80,7 @@ export default function TabOneScreen() {
       Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c * 1000; // Distância em metros
+    const d = R * c * 1000;
     return d;
   };
 
@@ -98,8 +88,8 @@ export default function TabOneScreen() {
     return deg * (Math.PI / 180);
   };
 
-  const showAlert = (message) => {
-    Alert.alert('Ponto de Interesse', message);
+  const showAlert = (title, message) => { // Alterar showAlert para aceitar título e mensagem
+    Alert.alert(title, message);
   };
 
   let mapRegion = {
@@ -124,17 +114,22 @@ export default function TabOneScreen() {
         style={styles.map}
         initialRegion={mapRegion}
         showsUserLocation={true}
+        onPress={(event) => {
+          // Quando clica no mapa, deseleciona o edifício
+          setSelectedBuilding(null);
+        }}
       >
-        {Object.keys(uminhoLocations).map((key) => (
-          <React.Fragment key={key}>
+        {uminho_locations.map((building) => (
+          <React.Fragment key={building.id}>
             <Marker
-              coordinate={uminhoLocations[key]}
-              title={key}
-              description={uminhoLocations[key].info}
+              coordinate={building}
+              title={building.name}
+              description={building.description}
+              onPress={() => setSelectedBuilding(building)} // Selecionar edifício ao clicar no marcador
             />
             <Circle
-              center={uminhoLocations[key]}
-              radius={uminhoLocations[key].radius}
+              center={building}
+              radius={building.radius}
               fillColor="rgba(200, 200, 200, 0.3)"
               strokeColor="rgba(0, 0, 0, 0.3)"
             />
@@ -143,12 +138,20 @@ export default function TabOneScreen() {
         {location && (
           <Circle
             center={location.coords}
-            radius={5} // Pequeno círculo para a localização atual
+            radius={5}
             fillColor="blue"
             strokeColor="blue"
           />
         )}
       </MapView>
+
+      {selectedBuilding && (
+        <View style={styles.infoBox}>
+          <Text style={styles.infoName}>{selectedBuilding.name}</Text>
+          <Text style={styles.infoDescription}>{selectedBuilding.description}</Text>
+        </View>
+      )}
+
       <Text style={styles.locationText}>
         {errorMsg ? errorMsg : location ? `Latitude: ${location.coords.latitude}, Longitude: ${location.coords.longitude}` : "A obter localização..."}
       </Text>
@@ -167,5 +170,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 10,
     fontSize: 16,
+  },
+  infoBox: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 10,
+    elevation: 5, // Sombra (Android)
+    shadowColor: '#000', // Sombra (iOS)
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  infoName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  infoDescription: {
+    fontSize: 14,
   },
 });
