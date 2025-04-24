@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Alert } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
-import uminho_locations from '../../assets/uminho_locations.json'; // Importa o JSON com as localizações
+import uminho_locations from '../../assets/uminho_locations.json';
+import tricornio from '../../assets/images/tricornio_emoji .png';
+
+
 
 export default function TabOneScreen() {
   const [location, setLocation] = useState(null);
@@ -136,11 +139,10 @@ export default function TabOneScreen() {
           </React.Fragment>
         ))}
         {location && (
-          <Circle
-            center={location.coords}
-            radius={5}
-            fillColor="blue"
-            strokeColor="blue"
+          <Marker
+            coordinate={location.coords}
+            anchor={{ x: 0.5, y: 0.5 }} // centra o ícone
+            image={tricornio}
           />
         )}
       </MapView>
