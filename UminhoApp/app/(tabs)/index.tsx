@@ -1,18 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Alert } from 'react-native';
+import { StyleSheet, View, Text, Alert, Button } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { useRouter } from 'expo-router';
+import { auth } from '../../constants/firebaseConfig'; // <-- IMPORTANTE: importar o auth!
 import uminho_locations from '../../assets/uminho_locations.json';
 import tricornio from '../../assets/images/tricornio_emoji .png';
-
-
 
 export default function TabOneScreen() {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [enteredBuildings, setEnteredBuildings] = useState([]);
-  const [selectedBuilding, setSelectedBuilding] = useState(null); // Novo estado para o edifício selecionado
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const router = useRouter();
 
+  // NOVO: Proteger este ecrã
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        router.replace('/login'); // Se não estiver logado, manda para login
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Localização
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -51,7 +64,7 @@ export default function TabOneScreen() {
     const { latitude, longitude } = location.coords;
     const newEnteredBuildings = [...enteredBuildings];
 
-    for (const building of uminho_locations) { // Usar o array do JSON
+    for (const building of uminho_locations) {
       const distance = calculateDistance(
         latitude, longitude,
         building.latitude, building.longitude
@@ -61,12 +74,9 @@ export default function TabOneScreen() {
       const wasPreviouslyInside = enteredBuildings.includes(building.id);
 
       if (isCurrentlyInside && !wasPreviouslyInside) {
-        // Entrou na geofence
-        showAlert(`Entrou em ${building.name}`, building.description); // Mostrar descrição
+        showAlert(`Entrou em ${building.name}`, building.description);
         newEnteredBuildings.push(building.id);
       } else if (!isCurrentlyInside && wasPreviouslyInside) {
-        // Saiu da geofence (opcional)
-        // showAlert(`Saiu de ${building.name}`);
         newEnteredBuildings.splice(newEnteredBuildings.indexOf(building.id), 1);
       }
     }
@@ -91,7 +101,7 @@ export default function TabOneScreen() {
     return deg * (Math.PI / 180);
   };
 
-  const showAlert = (title, message) => { // Alterar showAlert para aceitar título e mensagem
+  const showAlert = (title, message) => {
     Alert.alert(title, message);
   };
 
@@ -113,14 +123,15 @@ export default function TabOneScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.profileButton}>
+        <Button title="Perfil" onPress={() => router.push('/profile')} />
+      </View>
+
       <MapView
         style={styles.map}
         initialRegion={mapRegion}
         showsUserLocation={true}
-        onPress={(event) => {
-          // Quando clica no mapa, deseleciona o edifício
-          setSelectedBuilding(null);
-        }}
+        onPress={() => setSelectedBuilding(null)}
       >
         {uminho_locations.map((building) => (
           <React.Fragment key={building.id}>
@@ -128,7 +139,7 @@ export default function TabOneScreen() {
               coordinate={building}
               title={building.name}
               description={building.description}
-              onPress={() => setSelectedBuilding(building)} // Selecionar edifício ao clicar no marcador
+              onPress={() => setSelectedBuilding(building)}
             />
             <Circle
               center={building}
@@ -141,7 +152,7 @@ export default function TabOneScreen() {
         {location && (
           <Marker
             coordinate={location.coords}
-            anchor={{ x: 0.5, y: 0.5 }} // centra o ícone
+            anchor={{ x: 0.5, y: 0.5 }}
             image={tricornio}
           />
         )}
@@ -162,36 +173,15 @@ export default function TabOneScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    flex: 1,
-  },
-  locationText: {
-    textAlign: 'center',
-    marginVertical: 10,
-    fontSize: 16,
-  },
+  container: { flex: 1 },
+  map: { flex: 1 },
+  locationText: { textAlign: 'center', marginVertical: 10, fontSize: 16 },
   infoBox: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 10,
-    elevation: 5, // Sombra (Android)
-    shadowColor: '#000', // Sombra (iOS)
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    position: 'absolute', bottom: 20, left: 20, right: 20, backgroundColor: 'white', padding: 10,
+    borderRadius: 10, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25, shadowRadius: 3.84,
   },
-  infoName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  infoDescription: {
-    fontSize: 14,
-  },
+  infoName: { fontSize: 18, fontWeight: 'bold' },
+  infoDescription: { fontSize: 14 },
+  profileButton: { position: 'absolute', top: 40, right: 20, zIndex: 1 },
 });

@@ -21,7 +21,7 @@
     "longitude": -8.396887998956991,
     "name": "Biblioteca",
     "description": "A Biblioteca da UMinho oferece um vasto acervo de livros, periódicos e recursos digitais, sendo um espaço de estudo e investigação fundamental.",
-    "radius": 30
+    "radius": 40
   },
   {
     "id": "ginasio",
