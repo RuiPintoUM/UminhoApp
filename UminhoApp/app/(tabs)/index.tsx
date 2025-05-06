@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Button, Modal, Pressable } from 'react-native';
+import { StyleSheet, View, Dimensions, Text, Button, Modal, Pressable } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
@@ -9,11 +9,11 @@ import tricornio from '../../assets/images/tricornio_emoji.png';
 import { addVisitedBuilding, getVisitedBuildings, saveBadge, getUserBadges } from '../../constants/firebaseHelpers';
 import { allBadges } from '../../constants/badges';
 import { Alert } from 'react-native';
-
-
+import BarometerComponent from '../barometer';
+import { GyroscopeIcon } from '../giroscopio';
 
 export default function TabOneScreen() {
-  const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState<any>(null); // Tipagem ajustada para incluir coords
   const [errorMsg, setErrorMsg] = useState(null);
   const [enteredBuildings, setEnteredBuildings] = useState([]);
   const [popupBuilding, setPopupBuilding] = useState(null);
@@ -37,14 +37,15 @@ export default function TabOneScreen() {
         setErrorMsg('Permissão de localização negada!');
         return;
       }
-
+  
       let currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
         timeInterval: 5000,
         distanceInterval: 10,
       });
+      console.log('Localização atual:', currentLocation); // Adicione este log
       setLocation(currentLocation);
-
+  
       Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
@@ -52,6 +53,7 @@ export default function TabOneScreen() {
           distanceInterval: 10,
         },
         (newLocation) => {
+          console.log('Nova localização:', newLocation); // Adicione este log
           setLocation(newLocation);
         }
       );
@@ -155,10 +157,11 @@ export default function TabOneScreen() {
     // Atualize o estado local dos badges
     setUnlockedBadges(newUnlocked);
   };
-  
+
 
   const handleGoToFAQ = () => {
-    router.push('/faq'); // Redireciona para a página de dúvidas
+    console.log('FAQ button pressed');
+    router.push('/faq');
   };
 
   return (
@@ -169,6 +172,12 @@ export default function TabOneScreen() {
       <View style={styles.badgesButton}>
         <Button title="Ver Conquistas" onPress={() => router.push('/badges')} />
       </View>
+
+      {location && (
+        <BarometerComponent
+          currentLocation={{ latitude: location.coords.latitude, longitude: location.coords.longitude }}
+        />
+      )}
 
       <MapView
         style={styles.map}
@@ -194,13 +203,17 @@ export default function TabOneScreen() {
         ))}
         {location && (
           <Marker
-            coordinate={location.coords}
-            anchor={{ x: 0.5, y: 0.5 }}
-            image={tricornio}
-          />
+            coordinate={{
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            }}
+            anchor={{ x: 0.5, y: 0.5 }} // Center the icon
+          >
+            <GyroscopeIcon source={tricornio} />
+          </Marker>
         )}
       </MapView>
-
+  
       {popupBuilding && (
         <Modal
           animationType="slide"
@@ -222,18 +235,19 @@ export default function TabOneScreen() {
           </View>
         </Modal>
       )}
-
+  
       <Text style={styles.locationText}>
         {errorMsg ? errorMsg : location ? `Latitude: ${location.coords.latitude}, Longitude: ${location.coords.longitude}` : "A obter localização..."}
       </Text>
-
-      {/* Botão de ajuda flutuante */}
+  
       <Pressable style={styles.helpButton} onPress={handleGoToFAQ}>
         <Text style={styles.helpButtonText}>?</Text>
       </Pressable>
     </View>
   );
 }
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -271,10 +285,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
+  helpButton: {
+    position: 'absolute',
+    left: width * 0.01, // 5% da largura da tela
+    bottom: height * 0.01, // 5% da altura da tela
+    backgroundColor: 'white',
+    borderRadius: 50,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex: 11, // Add this to ensure it’s above other components
+  },
   helpButtonText: {
-    fontSize: 24,
-    color: 'Black',
+    fontSize: 20, // "?" ainda maior
+    color: 'black',
     fontWeight: 'bold',
   },
   badgesButton: { position: 'absolute', top: 40, left: 20, zIndex: 1 },
+  tricornio: {
+    width: 40, // Adjust size as needed
+    height: 40, // Adjust size as needed
+  },
 });

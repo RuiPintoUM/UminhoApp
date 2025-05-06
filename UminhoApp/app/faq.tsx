@@ -1,6 +1,8 @@
 import React from 'react';
 import { Linking } from 'react-native';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+
+
 
 export default function FAQ() {
   return (
@@ -261,6 +263,12 @@ disponível.
     </ScrollView>
   );
 }
+
+
+const { width, height } = Dimensions.get('window');
+const marginPercentage = 0.05; // 5%
+const leftMargin = width * marginPercentage;
+const bottomMargin = height * marginPercentage;
 
 const styles = StyleSheet.create({
   container: {
