@@ -6,6 +6,11 @@ import { useRouter } from 'expo-router';
 import { auth } from '../../constants/firebaseConfig';
 import uminho_locations from '../../assets/uminho_locations.json';
 import tricornio from '../../assets/images/tricornio_emoji.png';
+import { addVisitedBuilding, getVisitedBuildings, saveBadge, getUserBadges } from '../../constants/firebaseHelpers';
+import { allBadges } from '../../constants/badges';
+import { Alert } from 'react-native';
+
+
 
 export default function TabOneScreen() {
   const [location, setLocation] = useState(null);
@@ -13,6 +18,8 @@ export default function TabOneScreen() {
   const [enteredBuildings, setEnteredBuildings] = useState([]);
   const [popupBuilding, setPopupBuilding] = useState(null);
   const router = useRouter();
+  const [visitedBuildings, setVisitedBuildings] = useState<string[]>([]);
+  const [unlockedBadges, setUnlockedBadges] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -57,7 +64,7 @@ export default function TabOneScreen() {
     }
   }, [location]);
 
-  const checkGeofences = () => {
+  const checkGeofences = async () => {
     const { latitude, longitude } = location.coords;
     const newEnteredBuildings = [...enteredBuildings];
 
@@ -72,6 +79,13 @@ export default function TabOneScreen() {
 
       if (isCurrentlyInside && !wasPreviouslyInside) {
         setPopupBuilding(building);
+
+        if (!visitedBuildings.includes(building.id)) {
+          await addVisitedBuilding(building.id);
+          setVisitedBuildings((prev) => [...prev, building.id]);
+          checkBadges([...visitedBuildings, building.id]);
+        }
+
         newEnteredBuildings.push(building.id);
       } else if (!isCurrentlyInside && wasPreviouslyInside) {
         newEnteredBuildings.splice(newEnteredBuildings.indexOf(building.id), 1);
@@ -112,10 +126,44 @@ export default function TabOneScreen() {
     };
   }
 
+  const checkBadges = async (currentVisitedBuildings: string[]) => {
+    console.log("🏆 Verificando badges para:", currentVisitedBuildings);
+  
+    const context = { visitedBuildings: currentVisitedBuildings };
+    const newUnlocked = { ...unlockedBadges };
+  
+    console.log(`🔍 Obtendo badges do Firestore...`, JSON.stringify(allBadges));
+  
+    // Loop sobre todos os badges
+    for (const badge of allBadges) {
+      console.log(`🔍 Verificando badge: ${badge.id}`);
+      
+      console.log(`🏆 Badge: ${context.visitedBuildings.length}`);
+      const conditionMet = badge.condition(context);
+      console.log(`Condição para o badge ${badge.id} (${badge.title}):`, conditionMet);
+  
+      if (conditionMet && !newUnlocked[badge.id]) {
+        console.log(`🎉 Badge conquistado: ${badge.id}`);
+  
+        // Se conquistado, adicionar ao estado e ao Firestore
+        newUnlocked[badge.id] = true;
+        saveBadge(badge.id);
+        Alert.alert('Nova conquista!', `${badge.title}\n${badge.description}`);
+      }
+    }
+  
+    // Atualize o estado local dos badges
+    setUnlockedBadges(newUnlocked);
+  };
+  
+
   return (
     <View style={styles.container}>
       <View style={styles.profileButton}>
         <Button title="Perfil" onPress={() => router.push('/profile')} />
+      </View>
+      <View style={styles.badgesButton}>
+        <Button title="Ver Conquistas" onPress={() => router.push('/badges')} />
       </View>
 
       <MapView
@@ -199,4 +247,5 @@ const styles = StyleSheet.create({
   infoName: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
   infoDescription: { fontSize: 14, marginBottom: 10 },
   profileButton: { position: 'absolute', top: 40, right: 20, zIndex: 1 },
+  badgesButton: { position: 'absolute', top: 40, left: 20, zIndex: 1 },
 });
