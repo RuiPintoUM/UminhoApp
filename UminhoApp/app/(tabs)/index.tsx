@@ -169,7 +169,7 @@ export default function TabOneScreen() {
       <MapView
         style={styles.map}
         initialRegion={mapRegion}
-        showsUserLocation={true}
+        showsUserLocation={false}
         onPress={() => setPopupBuilding(null)}
       >
         {uminho_locations.map((building) => (
