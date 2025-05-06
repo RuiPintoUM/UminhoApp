@@ -71,5 +71,13 @@
     "name": "Casa Pais",
     "description": "Pã",
     "radius": 20
+  },
+  {
+    "id": "casa_Rui_VR",
+    "latitude": 41.30731501012375,
+    "longitude": -7.724921715647185,
+    "name": "Casa Rui VR",
+    "description": "A casa na Capital",
+    "radius": 40
   }
 ]
