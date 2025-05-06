@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Button, Modal } from 'react-native';
+import { StyleSheet, View, Text, Button, Modal, Pressable } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
@@ -112,6 +112,10 @@ export default function TabOneScreen() {
     };
   }
 
+  const handleGoToFAQ = () => {
+    router.push('/faq'); // Redireciona para a página de dúvidas
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.profileButton}>
@@ -174,6 +178,11 @@ export default function TabOneScreen() {
       <Text style={styles.locationText}>
         {errorMsg ? errorMsg : location ? `Latitude: ${location.coords.latitude}, Longitude: ${location.coords.longitude}` : "A obter localização..."}
       </Text>
+
+      {/* Botão de ajuda flutuante */}
+      <Pressable style={styles.helpButton} onPress={handleGoToFAQ}>
+        <Text style={styles.helpButtonText}>?</Text>
+      </Pressable>
     </View>
   );
 }
@@ -199,4 +208,24 @@ const styles = StyleSheet.create({
   infoName: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
   infoDescription: { fontSize: 14, marginBottom: 10 },
   profileButton: { position: 'absolute', top: 40, right: 20, zIndex: 1 },
+  helpButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    backgroundColor: 'white',
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  helpButtonText: {
+    fontSize: 24,
+    color: 'Black',
+    fontWeight: 'bold',
+  },
 });

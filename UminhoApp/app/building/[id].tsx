@@ -22,11 +22,34 @@ export default function BuildingDetails() {
     }
   };
 
+  // Função para formatar os horários e separar por local
+  const formatHorario = (horario) => {
+    const horariosArray = horario.split(',');
+    return horariosArray.map((item, index) => {
+      const [local, time] = item.split(':');
+      return (
+        <View key={index} style={styles.horarioContainer}>
+          <Text style={styles.local}>{local.trim()}</Text>
+          <Text style={styles.time}>{time.trim()}</Text>
+        </View>
+      );
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.name}>{building.name}</Text>
         <Text style={styles.description}>{building.description}</Text>
+
+        {/* Verifica se o horário está disponível e exibe se houver */}
+        {building.horario ? (
+          <>
+            <Text style={styles.horarioTitle}>Horário:</Text>
+            {formatHorario(building.horario)}
+          </>
+        ) : null}
+
         {building.planta && (
           <Pressable style={styles.button} onPress={openPlanta}>
             <Text style={styles.buttonText}>Ver planta</Text>
@@ -69,6 +92,24 @@ const styles = StyleSheet.create({
     textAlign: 'justify',
     color: '#555',
     marginBottom: 16,
+  },
+  horarioTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
+    color: '#333',
+  },
+  horarioContainer: {
+    marginVertical: 5,
+  },
+  local: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#00000',
+  },
+  time: {
+    fontSize: 16,
+    color: '#555',
   },
   button: {
     marginTop: 10,
