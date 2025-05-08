@@ -7,7 +7,8 @@
     "description": "O CP2 é um dos principais compelxos da Universidade do Minho, conhecido pelas suas modernas instalações e cursos de engenharia.",
     "horario": "Bar : 8h-20h , Espaço Recurso : 8h-20h",
     "radius": 50,
-    "planta" : "https://campi.uminho.pt/CG-02.html?floor=2"
+    "planta" : "https://campi.uminho.pt/CG-02.html?floor=2",
+    "base_pressure": 992.2
   },
   {
     "id": "cp1",
@@ -17,7 +18,8 @@
     "description": "O compelxos de Gualtar é o maior compelxos da UMinho, onde se encontram a reitoria e grande parte das faculdades de ciências humanas e sociais.",
     "radius": 55,
     "horario": "Bar : 8h-20h",
-    "planta" : "https://campi.uminho.pt/CG-01.html?floor=1"
+    "planta" : "https://campi.uminho.pt/CG-01.html?floor=1",
+    "base_pressure": 992.1
   },
   {
     "id": "biblioteca",
@@ -27,7 +29,8 @@
     "description": "A Biblioteca da UMinho oferece um vasto acervo de livros, periódicos e recursos digitais, sendo um espaço de estudo e investigação fundamental.",
     "radius": 40,
     "horario": "Salas 24 : 24/7 , Biblioteca : 9h-30h",
-    "planta" : "https://campi.uminho.pt/CG-04.html?floor=1"
+    "planta" : "https://campi.uminho.pt/CG-04.html?floor=1",
+    "base_pressure": 992.4
   },
   {
     "id": "escola de engenharia",
@@ -36,7 +39,8 @@
     "name": "Escola de Engenharia",
     "description": "A Escola de Engenharia da UMinho é reconhecida pela sua excelência em ensino e investigação nas áreas de engenharia e tecnologia.",
     "radius": 40,
-    "planta" : "https://campi.uminho.pt/CG-07.html?floor=1"
+    "planta" : "https://campi.uminho.pt/CG-07.html?floor=1",
+    "base_pressure": 991.2
   },
   {
     "id": "ginasio",
@@ -45,7 +49,8 @@
     "name": "Ginásio",
     "horario": "Ginasio : 9h-21h",
     "description": "O ginásio da UMinho proporciona instalações desportivas para os estudantes e funcionários, promovendo um estilo de vida saudável.",
-    "radius": 50
+    "radius": 50,
+    "base_pressure": 990.8
   },
   {
     "id": "cantina",
@@ -54,7 +59,8 @@
     "name": "Cantina",
     "horario": "Almoço : 12h-14h , Jantar : 19h-21h",
     "description": "Estão disponíveis 3 cantinas em Gualtar, Santa Tecla e Azurém em que podes fazer uma refeição completa. As senhas individuais têm um custo de 2,70€ e um pack de 10 senhas tem um custo de 25€. Caso seja o prato simples, a senha tem um custo de 2,05€. As senhas podem ser adquiridas nos bares ou na cantina ou na aplicação SASUM.",
-    "radius": 50
+    "radius": 50,
+    "base_pressure": 990.4
   },
   {
     "id": "casa_Rui",
@@ -62,7 +68,8 @@
     "longitude": -8.484463773265833,
     "name": "Casa Rui e Raquel",
     "description": "Teste.",
-    "radius": 50
+    "radius": 50,
+    "base_pressure": 1000.0
   },
   {
     "id": "casa_Pais",
@@ -70,7 +77,8 @@
     "longitude": -8.53438522762171,
     "name": "Casa Pais",
     "description": "Pã",
-    "radius": 20
+    "radius": 20,
+    "base_pressure": 1000.0
   },
   {
     "id": "casa_Rui_VR",
@@ -78,6 +86,7 @@
     "longitude": -7.724921715647185,
     "name": "Casa Rui VR",
     "description": "A casa na Capital",
-    "radius": 40
+    "radius": 40,
+    "base_pressure": 1000.0
   }
 ]

@@ -117,7 +117,7 @@ const BarometerComponent: React.FC<BarometerProps> = ({ currentLocation }) => {
         </Text>
       ) : (
         <Text style={{ fontSize: 18, color: 'lightblue' }}>
-          {currentBuilding ? '--------'}
+          {currentBuilding ? '--------' : ''}
         </Text>
       )}
 
@@ -137,8 +137,7 @@ const BarometerComponent: React.FC<BarometerProps> = ({ currentLocation }) => {
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      W>
+        onRequestClose={() => setModalVisible(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: 300 }}>
             <Text style={{ fontSize: 16, marginBottom: 10 }}>Insira o número do piso atual para recalibrar o Barômetro:</Text>
