@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, Alert, useColorScheme, Image, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Alert, useColorScheme, Image, Pressable } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../constants/firebaseConfig';
 import { useRouter } from 'expo-router';
-import icon from '../assets/images/profile.jpg';  // Importe o ícone de perfil
+
+// Import the profile image (adjust the path if necessary)
+const profileIcon = require('../assets/images/profile.jpg');
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -19,20 +21,16 @@ export default function ProfileScreen() {
   };
 
   const handleGoBackToMap = () => {
-    router.replace('/(tabs)/'); 
+    router.replace('/(tabs)/');
   };
 
   return (
     <View style={[styles.container, { backgroundColor: '#f2f2f2' }]}>
-      <View style={[styles.card, { backgroundColor: '#fff' }]}>  {/* Caixa do perfil em cinza claro */}
-        <Text style={[styles.title, { color: colorScheme === 'dark' ? '#00000' : '#000' }]}>Perfil</Text>
-
-        {/* Exibe a imagem do perfil */}
-        <Image source={icon} style={styles.profileImage} />
-
-        <Text style={[styles.text, { fontWeight: 'bold', color: colorScheme === 'dark' ? '#00000' : '#333' }]}>Email:</Text>
+      <View style={[styles.card, { backgroundColor: '#fff' }]}>
+        <Text style={[styles.title, { color: colorScheme === 'dark' ? '#000000' : '#000' }]}>Perfil</Text>
+        <Image source={profileIcon} style={styles.profileImage} />
+        <Text style={[styles.text, { fontWeight: 'bold', color: colorScheme === 'dark' ? '#000000' : '#333' }]}>Email:</Text>
         <Text style={[styles.email, { color: colorScheme === 'dark' ? '#555' : '#555' }]}>{auth.currentUser?.email}</Text>
-
         <View style={styles.buttonsContainer}>
           <Pressable style={styles.button} onPress={handleGoBackToMap}>
             <Text style={styles.buttonText}>Voltar</Text>
@@ -52,9 +50,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#f2f2f2',
   },
   card: {
-    backgroundColor: '#f5f5f5',  // Fundo cinza claro para a caixa de perfil
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 16,
     shadowColor: '#000',
@@ -77,12 +76,12 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 20,  // Distância entre a imagem e o email
+    marginBottom: 20,
   },
   text: {
     fontSize: 18,
     marginTop: 10,
-    textAlign: 'left'
+    textAlign: 'left',
   },
   email: {
     fontSize: 16,

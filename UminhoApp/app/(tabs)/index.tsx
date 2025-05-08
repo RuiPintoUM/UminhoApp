@@ -263,18 +263,19 @@ const styles = StyleSheet.create({
   badgesButton: { position: 'absolute', top: 40, left: 20, zIndex: 1 },
   helpButton: {
     position: 'absolute',
-    bottom: 30,
-    left: 30,
+    bottom: 5,  // Reduced from 30
+    left: 5,    // Reduced from 30
     backgroundColor: 'white',
     borderRadius: 50,
-    width: 50,
-    height: 50,
+    width: 35,
+    height: 35,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    zIndex: 30,
   },
   helpButtonText: {
     fontSize: 20,
