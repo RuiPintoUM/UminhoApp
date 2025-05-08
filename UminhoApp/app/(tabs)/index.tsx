@@ -10,7 +10,7 @@ import { addVisitedBuilding, getVisitedBuildings, saveBadge, getUserBadges } fro
 import { allBadges } from '../../constants/badges';
 import { Alert } from 'react-native';
 import BarometerComponent from '../barometer';
-import { GyroscopeIcon } from '../giroscopio';
+import { CompassIcon } from '../bussola';
 
 export default function TabOneScreen() {
   const [location, setLocation] = useState<any>(null); // Tipagem ajustada para incluir coords
@@ -43,7 +43,7 @@ export default function TabOneScreen() {
         timeInterval: 5000,
         distanceInterval: 10,
       });
-      console.log('Localização atual:', currentLocation); // Adicione este log
+      //console.log('Localização atual:', currentLocation); // Adicione este log
       setLocation(currentLocation);
   
       Location.watchPositionAsync(
@@ -53,7 +53,7 @@ export default function TabOneScreen() {
           distanceInterval: 10,
         },
         (newLocation) => {
-          console.log('Nova localização:', newLocation); // Adicione este log
+          //console.log('Nova localização:', newLocation); // Adicione este log
           setLocation(newLocation);
         }
       );
@@ -129,23 +129,23 @@ export default function TabOneScreen() {
   }
 
   const checkBadges = async (currentVisitedBuildings: string[]) => {
-    console.log("🏆 Verificando badges para:", currentVisitedBuildings);
+    //console.log("🏆 Verificando badges para:", currentVisitedBuildings);
   
     const context = { visitedBuildings: currentVisitedBuildings };
     const newUnlocked = { ...unlockedBadges };
   
-    console.log(`🔍 Obtendo badges do Firestore...`, JSON.stringify(allBadges));
+    //console.log(`🔍 Obtendo badges do Firestore...`, JSON.stringify(allBadges));
   
     // Loop sobre todos os badges
     for (const badge of allBadges) {
-      console.log(`🔍 Verificando badge: ${badge.id}`);
+      //console.log(`🔍 Verificando badge: ${badge.id}`);
       
-      console.log(`🏆 Badge: ${context.visitedBuildings.length}`);
+      //console.log(`🏆 Badge: ${context.visitedBuildings.length}`);
       const conditionMet = badge.condition(context);
-      console.log(`Condição para o badge ${badge.id} (${badge.title}):`, conditionMet);
+      //console.log(`Condição para o badge ${badge.id} (${badge.title}):`, conditionMet);
   
       if (conditionMet && !newUnlocked[badge.id]) {
-        console.log(`🎉 Badge conquistado: ${badge.id}`);
+        //console.log(`🎉 Badge conquistado: ${badge.id}`);
   
         // Se conquistado, adicionar ao estado e ao Firestore
         newUnlocked[badge.id] = true;
@@ -160,7 +160,7 @@ export default function TabOneScreen() {
 
 
   const handleGoToFAQ = () => {
-    console.log('FAQ button pressed');
+    //console.log('FAQ button pressed');
     router.push('/faq');
   };
 
@@ -209,7 +209,7 @@ export default function TabOneScreen() {
             }}
             anchor={{ x: 0.5, y: 0.5 }} // Center the icon
           >
-            <GyroscopeIcon source={tricornio} />
+            <CompassIcon source={tricornio} />
           </Marker>
         )}
       </MapView>

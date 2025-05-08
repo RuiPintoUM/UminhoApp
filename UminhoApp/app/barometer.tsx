@@ -26,7 +26,7 @@ const BarometerComponent: React.FC<BarometerProps> = ({ currentLocation }) => {
     const subscription = Barometer.addListener(({ pressure }) => {
       const now = Date.now();
       if (now - lastUpdate >= 5000) {
-        console.log('Pressão atual:', pressure);
+        //console.log('Pressão atual:', pressure);
         setPressure(pressure);
         lastUpdate = now;
       }
@@ -37,7 +37,7 @@ const BarometerComponent: React.FC<BarometerProps> = ({ currentLocation }) => {
   useEffect(() => {
     if (currentLocation) {
       const building = findBuilding(currentLocation);
-      console.log('Edifício encontrado:', building);
+      //console.log('Edifício encontrado:', building);
       setCurrentBuilding(building);
     }
   }, [currentLocation]);
@@ -49,14 +49,14 @@ const BarometerComponent: React.FC<BarometerProps> = ({ currentLocation }) => {
         const h_diff = (calibration.pressure - pressure) / rho_g;
         const floorNumber = calibration.floor + Math.round(h_diff / floor_height);
         setFloor(floorNumber);
-        console.log(`Calculando com calibração: h_diff=${h_diff}, floorNumber=${floorNumber}`);
+        //console.log(`Calculando com calibração: h_diff=${h_diff}, floorNumber=${floorNumber}`);
       } else {
         const base_pressure = currentBuilding.base_pressure;
         const h = (base_pressure - pressure) / rho_g;
         const raw_floor = h / floor_height;
         const floorNumber = Math.round(raw_floor) + 1;
         setFloor(floorNumber);
-        console.log(`Calculando sem calibração: base_pressure=${base_pressure}, h=${h}, raw_floor=${raw_floor}, floorNumber=${floorNumber}`);
+        //console.log(`Calculando sem calibração: base_pressure=${base_pressure}, h=${h}, raw_floor=${raw_floor}, floorNumber=${floorNumber}`);
       }
     } else {
       setFloor(null);
@@ -66,7 +66,7 @@ const BarometerComponent: React.FC<BarometerProps> = ({ currentLocation }) => {
   const findBuilding = (location: { latitude: number; longitude: number }) => {
     return uminho_locations.find((building) => {
       const distance = calculateDistance(location, building);
-      console.log(`Distância para ${building.name}: ${distance} metros`);
+      //console.log(`Distância para ${building.name}: ${distance} metros`);
       return distance < building.radius;
     });
   };
@@ -89,13 +89,13 @@ const BarometerComponent: React.FC<BarometerProps> = ({ currentLocation }) => {
     if (inputFloor && currentBuilding && pressure) {
       const userFloor = parseInt(inputFloor, 10);
       if (isNaN(userFloor)) {
-        console.log('Piso inválido inserido');
+        //console.log('Piso inválido inserido');
         return;
       }
       setCalibrationData(prev => ({ ...prev, [currentBuilding.id]: { floor: userFloor, pressure } }));
       setModalVisible(false);
       setInputFloor('');
-      console.log(`Calibração para ${currentBuilding.id}: floor=${userFloor}, pressure=${pressure}`);
+      //console.log(`Calibração para ${currentBuilding.id}: floor=${userFloor}, pressure=${pressure}`);
     }
   };
 
