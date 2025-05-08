@@ -13,7 +13,7 @@ import BarometerComponent from '../barometer';
 import { CompassIcon } from '../bussola';
 
 export default function TabOneScreen() {
-  const [location, setLocation] = useState<any>(null); // Tipagem ajustada para incluir coords
+  const [location, setLocation] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [enteredBuildings, setEnteredBuildings] = useState([]);
   const [popupBuilding, setPopupBuilding] = useState(null);
@@ -21,6 +21,7 @@ export default function TabOneScreen() {
   const [visitedBuildings, setVisitedBuildings] = useState<string[]>([]);
   const [unlockedBadges, setUnlockedBadges] = useState<Record<string, boolean>>({});
 
+  // Verifica autenticação
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
@@ -30,6 +31,7 @@ export default function TabOneScreen() {
     return unsubscribe;
   }, []);
 
+  // Busca localização, badges desbloqueadas e edifícios visitados ao montar o componente
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -37,15 +39,22 @@ export default function TabOneScreen() {
         setErrorMsg('Permissão de localização negada!');
         return;
       }
-  
+
       let currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
         timeInterval: 5000,
         distanceInterval: 10,
       });
-      //console.log('Localização atual:', currentLocation); // Adicione este log
       setLocation(currentLocation);
-  
+
+      // Busca badges desbloqueadas do Firebase
+      const badges = await getUserBadges();
+      setUnlockedBadges(badges);
+
+      // Busca edifícios visitados do Firebase
+      const visited = await getVisitedBuildings();
+      setVisitedBuildings(visited);
+
       Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
@@ -53,13 +62,13 @@ export default function TabOneScreen() {
           distanceInterval: 10,
         },
         (newLocation) => {
-          //console.log('Nova localização:', newLocation); // Adicione este log
           setLocation(newLocation);
         }
       );
     })();
   }, []);
 
+  // Verifica geofences quando a localização mudar
   useEffect(() => {
     if (location) {
       checkGeofences();
@@ -112,6 +121,19 @@ export default function TabOneScreen() {
 
   const deg2rad = (deg) => deg * (Math.PI / 180);
 
+  const checkBadges = async (currentVisitedBuildings: string[]) => {
+    const context = { visitedBuildings: currentVisitedBuildings };
+
+    for (const badge of allBadges) {
+      const conditionMet = badge.condition(context);
+      if (conditionMet && !unlockedBadges[badge.id]) { // Verifica contra badges do Firebase
+        await saveBadge(badge.id);
+        setUnlockedBadges((prev) => ({ ...prev, [badge.id]: true }));
+        Alert.alert('Nova conquista!', `${badge.title}\n${badge.description}`);
+      }
+    }
+  };
+
   let mapRegion = {
     latitude: 41.5579,
     longitude: -8.4025,
@@ -128,39 +150,7 @@ export default function TabOneScreen() {
     };
   }
 
-  const checkBadges = async (currentVisitedBuildings: string[]) => {
-    //console.log("🏆 Verificando badges para:", currentVisitedBuildings);
-  
-    const context = { visitedBuildings: currentVisitedBuildings };
-    const newUnlocked = { ...unlockedBadges };
-  
-    //console.log(`🔍 Obtendo badges do Firestore...`, JSON.stringify(allBadges));
-  
-    // Loop sobre todos os badges
-    for (const badge of allBadges) {
-      //console.log(`🔍 Verificando badge: ${badge.id}`);
-      
-      //console.log(`🏆 Badge: ${context.visitedBuildings.length}`);
-      const conditionMet = badge.condition(context);
-      //console.log(`Condição para o badge ${badge.id} (${badge.title}):`, conditionMet);
-  
-      if (conditionMet && !newUnlocked[badge.id]) {
-        //console.log(`🎉 Badge conquistado: ${badge.id}`);
-  
-        // Se conquistado, adicionar ao estado e ao Firestore
-        newUnlocked[badge.id] = true;
-        saveBadge(badge.id);
-        Alert.alert('Nova conquista!', `${badge.title}\n${badge.description}`);
-      }
-    }
-  
-    // Atualize o estado local dos badges
-    setUnlockedBadges(newUnlocked);
-  };
-
-
   const handleGoToFAQ = () => {
-    //console.log('FAQ button pressed');
     router.push('/faq');
   };
 
@@ -213,7 +203,7 @@ export default function TabOneScreen() {
           </Marker>
         )}
       </MapView>
-  
+
       {popupBuilding && (
         <Modal
           animationType="slide"
@@ -235,11 +225,11 @@ export default function TabOneScreen() {
           </View>
         </Modal>
       )}
-  
+
       <Text style={styles.locationText}>
         {errorMsg ? errorMsg : location ? `Latitude: ${location.coords.latitude}, Longitude: ${location.coords.longitude}` : "A obter localização..."}
       </Text>
-  
+
       <Pressable style={styles.helpButton} onPress={handleGoToFAQ}>
         <Text style={styles.helpButtonText}>?</Text>
       </Pressable>
@@ -270,6 +260,7 @@ const styles = StyleSheet.create({
   infoName: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
   infoDescription: { fontSize: 14, marginBottom: 10 },
   profileButton: { position: 'absolute', top: 40, right: 20, zIndex: 1 },
+  badgesButton: { position: 'absolute', top: 40, left: 20, zIndex: 1 },
   helpButton: {
     position: 'absolute',
     bottom: 30,
@@ -285,30 +276,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  helpButton: {
-    position: 'absolute',
-    left: width * 0.01, // 5% da largura da tela
-    bottom: height * 0.01, // 5% da altura da tela
-    backgroundColor: 'white',
-    borderRadius: 50,
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    zIndex: 11, // Add this to ensure it’s above other components
-  },
   helpButtonText: {
-    fontSize: 20, // "?" ainda maior
+    fontSize: 20,
     color: 'black',
     fontWeight: 'bold',
   },
-  badgesButton: { position: 'absolute', top: 40, left: 20, zIndex: 1 },
   tricornio: {
-    width: 40, // Adjust size as needed
-    height: 40, // Adjust size as needed
+    width: 40,
+    height: 40,
   },
 });
