@@ -17,11 +17,11 @@ export default function TabOneScreen() {
   const [errorMsg, setErrorMsg] = useState(null);
   const [enteredBuildings, setEnteredBuildings] = useState([]);
   const [popupBuilding, setPopupBuilding] = useState(null);
-  const router = useRouter();
   const [visitedBuildings, setVisitedBuildings] = useState<string[]>([]);
   const [unlockedBadges, setUnlockedBadges] = useState<Record<string, boolean>>({});
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const router = useRouter();
 
-  // Verifica autenticação
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
@@ -31,49 +31,50 @@ export default function TabOneScreen() {
     return unsubscribe;
   }, []);
 
-  // Busca localização, badges desbloqueadas e edifícios visitados ao montar o componente
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permissão de localização negada!');
-        return;
-      }
+      try {
+        const badges = await getUserBadges();
+        setUnlockedBadges(badges);
+        const visited = await getVisitedBuildings();
+        setVisitedBuildings(visited);
+        setIsDataLoaded(true);
 
-      let currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-        timeInterval: 5000,
-        distanceInterval: 10,
-      });
-      setLocation(currentLocation);
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setErrorMsg('Permissão de localização negada!');
+          return;
+        }
 
-      // Busca badges desbloqueadas do Firebase
-      const badges = await getUserBadges();
-      setUnlockedBadges(badges);
-
-      // Busca edifícios visitados do Firebase
-      const visited = await getVisitedBuildings();
-      setVisitedBuildings(visited);
-
-      Location.watchPositionAsync(
-        {
+        let currentLocation = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
           timeInterval: 5000,
           distanceInterval: 10,
-        },
-        (newLocation) => {
-          setLocation(newLocation);
-        }
-      );
+        });
+        setLocation(currentLocation);
+
+        Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 5000,
+            distanceInterval: 10,
+          },
+          (newLocation) => {
+            setLocation(newLocation);
+          }
+        );
+      } catch (error) {
+        console.error('Error in initial setup:', error);
+        setErrorMsg('Erro ao carregar dados.');
+      }
     })();
   }, []);
 
-  // Verifica geofences quando a localização mudar
   useEffect(() => {
-    if (location) {
+    if (location && isDataLoaded) {
       checkGeofences();
     }
-  }, [location]);
+  }, [location, isDataLoaded]);
 
   const checkGeofences = async () => {
     const { latitude, longitude } = location.coords;
@@ -126,7 +127,7 @@ export default function TabOneScreen() {
 
     for (const badge of allBadges) {
       const conditionMet = badge.condition(context);
-      if (conditionMet && !unlockedBadges[badge.id]) { // Verifica contra badges do Firebase
+      if (conditionMet && !unlockedBadges[badge.id]) {
         await saveBadge(badge.id);
         setUnlockedBadges((prev) => ({ ...prev, [badge.id]: true }));
         Alert.alert('Nova conquista!', `${badge.title}\n${badge.description}`);
@@ -197,7 +198,7 @@ export default function TabOneScreen() {
               latitude: location.coords.latitude,
               longitude: location.coords.longitude,
             }}
-            anchor={{ x: 0.5, y: 0.5 }} // Center the icon
+            anchor={{ x: 0.5, y: 0.5 }}
           >
             <CompassIcon source={tricornio} />
           </Marker>
@@ -263,8 +264,8 @@ const styles = StyleSheet.create({
   badgesButton: { position: 'absolute', top: 40, left: 20, zIndex: 1 },
   helpButton: {
     position: 'absolute',
-    bottom: 5,  // Reduced from 30
-    left: 5,    // Reduced from 30
+    bottom: 5,
+    left: 5,
     backgroundColor: 'white',
     borderRadius: 50,
     width: 35,
