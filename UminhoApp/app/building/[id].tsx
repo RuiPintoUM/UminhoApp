@@ -66,7 +66,9 @@ export default function BuildingDetails() {
         )}
 
         {/* Botão "Find me" adicionado */}
-        <Button title="Find me" onPress={handleFindMe} />
+        <Pressable style={styles.button} onPress={handleFindMe}>
+          <Text style={styles.buttonText}>Find me</Text>
+        </Pressable>
       </View>
     </View>
   );

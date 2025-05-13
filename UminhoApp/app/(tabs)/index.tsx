@@ -190,6 +190,7 @@ export default function TabOneScreen() {
         <Button title="Ver Conquistas" onPress={() => router.push('/badges')} />
       </View>
 
+
       {location && (
         <BarometerComponent
           currentLocation={{ latitude: location.coords.latitude, longitude: location.coords.longitude }}
