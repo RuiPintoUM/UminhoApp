@@ -44,7 +44,7 @@ Whether you're a new student, UminhoApp aims to simplify your campus life, foste
 
 <p align="center">
   <img src="./data/main.jpeg" alt="Página Principal" title="Página Principal" width="300" style="margin-right:10px;" />
-  <img src="./data/finder.jpeg" alt="Finder" title="Finder" width="300" style="margin-right:10px;" />
+  <img src="./data/popUp.jpg" alt="popUp" title="Finder" width="300" style="margin-right:10px;" />
   <img src="./data/badges.jpg" alt="Pop Up" title="Pop Up" width="300" />
 </p>
 
